@@ -1,4 +1,4 @@
-package com.example.testtask.presentation
+package com.example.testtask.presentation.activity
 
 import android.os.Bundle
 import android.util.Log

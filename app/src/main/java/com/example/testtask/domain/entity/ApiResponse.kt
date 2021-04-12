@@ -4,6 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class ApiResponse(
     @SerializedName("page") val page: Int,
-    @SerializedName("results") val items: List<Movie> = emptyList(),
+    @SerializedName("results") val items: List<FavoriteMoviesEntity> = emptyList(),
     val nextPage: Int? = null
 )

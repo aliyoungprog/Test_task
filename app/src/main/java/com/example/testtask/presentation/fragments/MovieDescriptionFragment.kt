@@ -1,60 +1,108 @@
 package com.example.testtask.presentation.fragments
 
+
+import android.content.Context
+import android.graphics.Movie
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.testtask.R
+import com.example.testtask.databinding.FragmentMovieDescriptionBinding
+import com.example.testtask.domain.entity.FavoriteMoviesEntity
+import com.example.testtask.presentation.view_models.MovieViewModel
+import org.koin.android.ext.android.inject
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [MovieDescriptionFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MovieDescriptionFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    lateinit var bind: FragmentMovieDescriptionBinding
+    lateinit var btnAdd: ImageView
+    lateinit var movieTitle: TextView
+    lateinit var movieDesc: TextView
+    lateinit var movie: FavoriteMoviesEntity
+    private val favoriteMoviesViewModel: MovieViewModel by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_movie_description, container, false)
+        setHasOptionsMenu(true)
+        setUpActionBar()
+        bind = FragmentMovieDescriptionBinding.inflate(inflater)
+        return bind.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setUpBindings()
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment MovieDescriptionFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            MovieDescriptionFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        fun newInstance() = MovieDescriptionFragment()
+    }
+
+    private fun setUpBindings(){
+        val bundle: Bundle? = this.arguments
+        setUpViews()
+        movie = bundle!!.getParcelable("get_movie")!!
+        setImg(movie)
+        movieTitle.text = movie.title
+        movieDesc.text = movie.overview
+        addBtnListener(movie)
+    }
+
+    private fun setUpViews(){
+        movieTitle = bind.movieTitle
+        movieDesc = bind.movieDescription
+        btnAdd = bind.addToFavorites
+    }
+
+    private fun addBtnListener(movie: FavoriteMoviesEntity){
+        btnAdd.setOnClickListener {
+            if (!movie.isFavorite) {
+                favoriteMoviesViewModel.addToFavorites(movie)
+                bind.addToFavorites.setImageResource(R.drawable.ic_star_filled)
+                Toast.makeText(activity, "Add ${movie.title}", Toast.LENGTH_SHORT).show()
             }
+            else {
+                favoriteMoviesViewModel.removeFromFavorites(movie)
+                bind.addToFavorites.setImageResource(R.drawable.ic_star_border)
+                Toast.makeText(activity, "Remove ${movie.title}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setImg(movie: FavoriteMoviesEntity){
+        if (movie.isFavorite){
+            bind.addToFavorites.setImageResource(R.drawable.ic_star_filled)
+        }else{
+            bind.addToFavorites.setImageResource(R.drawable.ic_star_border)
+        }
+    }
+
+    private fun setUpActionBar() {
+        (activity as AppCompatActivity).supportActionBar?.title = "Описание"
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.getItemId() == android.R.id.home) {
+            val transaction = (activity as AppCompatActivity).supportFragmentManager.beginTransaction()
+            transaction.replace(R.id.nav_host_fragment, HomeFragment.newInstance())
+            transaction.commit()
+            return true
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

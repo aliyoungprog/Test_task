@@ -1,13 +1,26 @@
 package com.example.testtask.data.database
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import android.content.Context
+import androidx.databinding.library.BuildConfig
+import androidx.room.*
 import com.example.testtask.domain.entity.FavoriteMoviesEntity
 
-private lateinit var INSTANCE: FavoriteMoviesDatabase
+@Database(entities = [FavoriteMoviesEntity::class], version = 2)
+@TypeConverters(MovieTypeConvertor::class)
+abstract class FavoriteMovies : RoomDatabase(){
 
-@Database(entities = [FavoriteMoviesEntity::class], version = 1)
-abstract class FavoriteMoviesDatabase : RoomDatabase(){
-    abstract val favMoviesDao: FavoriteMoviesDao
-
+    companion object {
+        const val databaseName = "favorites_db"
+        fun getDatabase(context: Context): FavoriteMovies {
+            return Room.databaseBuilder(context, FavoriteMovies::class.java, databaseName)
+                .apply {
+                    if (BuildConfig.DEBUG) {
+                        fallbackToDestructiveMigration()
+                    }
+                    allowMainThreadQueries()
+                }
+                .build()
+        }
+    }
+    abstract fun getDao(): FavoriteMoviesDao
 }

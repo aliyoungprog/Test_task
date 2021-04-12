@@ -1,4 +1,9 @@
 package com.example.testtask.presentation.utils
 
-class DataState {
+import android.provider.ContactsContract
+
+sealed class DataState {
+    object NothingToShow: DataState()
+    object Loading: DataState()
+    object Success: DataState()
 }

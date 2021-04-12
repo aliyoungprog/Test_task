@@ -1,9 +1,9 @@
 package com.example.testtask.data.network
 
-import android.util.Log
-import okhttp3.Interceptor
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -12,6 +12,7 @@ object ApiRetrofit {
 
     private const val URL = "https://api.themoviedb.org"
     private const val API_KEY = "7c4afca12ec6c62155cbfa6647f584b7"
+
 
     fun injectApiService(retrofit: Retrofit = getRetrofit()): ApiService{
         return retrofit.create(ApiService::class.java)
@@ -39,4 +40,5 @@ object ApiRetrofit {
             level = HttpLoggingInterceptor.Level.BODY
         }
     }
+
 }
