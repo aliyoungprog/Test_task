@@ -11,10 +11,7 @@ import com.example.testtask.data.network.ApiService
 import com.example.testtask.domain.entity.FavoriteMoviesEntity
 import com.example.testtask.domain.repository.MovieRepository
 import com.example.testtask.presentation.utils.getDefaultPageConfig
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 
 class MovieRepositoryImpl(private val dao: FavoriteMoviesDao) : MovieRepository {
@@ -53,14 +50,16 @@ class MovieRepositoryImpl(private val dao: FavoriteMoviesDao) : MovieRepository 
 
     override suspend fun getAllFavorites(setAllMovies: (List<FavoriteMoviesEntity>) -> Unit) {
         val list = dao.getFavoriteMovies()
-        //Log.d("test", "onStart: ${dao.getFavoriteMovies().size}")
         setAllMovies(list)
     }
 
     override suspend fun searchByTitle(movieTitle: String, setMovies: (List<FavoriteMoviesEntity>) -> Unit) {
         val api = ApiRetrofit.injectApiService()
-        withContext(Dispatchers.Main){
-            val movieList = async { api.getMovieByTitle("7c4afca12ec6c62155cbfa6647f584b7", movieTitle) }
+        withContext(Dispatchers.IO){
+            val movieList = async {
+                api.getMovieByTitle("7c4afca12ec6c62155cbfa6647f584b7", movieTitle)
+            }
+            //Log.d("test", "onQueryTextSubmit: 1")
             if (movieList.await().body()?.items!!.isNotEmpty())
                 setMovies(movieList.await().body()!!.items)
             else{

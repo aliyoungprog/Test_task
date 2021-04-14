@@ -37,7 +37,6 @@ class HomeFragment : Fragment(), MovieItemClickListener {
     private val movieViewModel: MovieViewModel by inject()
     private val adapter = MovieAdapter(clickListener = this)
     private val pagingAdapter = PagingAdapter()
-    private var firstTime = true
 
     companion object{
         fun newInstance() = HomeFragment()
@@ -62,7 +61,6 @@ class HomeFragment : Fragment(), MovieItemClickListener {
             movieViewModel.popularMoviesLiveDataFromCache.observe(viewLifecycleOwner, Observer {
                 adapter.changeData(it)
                 bind.movieRecycler.adapter = adapter
-                //Log.d("test", "onStart asd: ${movieViewModel.popularMoviesLiveDataFromCache.value?.get(0)}")
             })
         }else{
             if (!checkConnection(requireContext())) {
@@ -98,12 +96,9 @@ class HomeFragment : Fragment(), MovieItemClickListener {
         val searchView = searchItem?.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                lifecycleScope.launch{
-                    getSearch(query)
-                }
-                observeSearchView()
+                getSearch(query) // IO thread
                 this@HomeFragment.hideKeyboard()
-                return true
+                return false
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
@@ -125,31 +120,35 @@ class HomeFragment : Fragment(), MovieItemClickListener {
         (activity as AppCompatActivity).supportActionBar?.title = title
     }
 
+    private fun observeSearchView(){
+        movieViewModel.searchResult.observe(viewLifecycleOwner, Observer {
+            adapter.changeData(items = movieViewModel.searchResult.value!!)
+            bind.movieRecycler.adapter = adapter
+        })
+    }
+
+    private fun getSearch(query: String?){
+        lifecycleScope.launch {
+            movieViewModel.searchMovieByTitle1(query!!)
+            Log.d("test", "testtt loading")
+            bind.progressCircular.visibility = View.VISIBLE
+            if (movieViewModel.liveDataState.value == DataState.Success){
+                Log.d("test", "testtt success")
+                bind.progressCircular.visibility = View.GONE
+                observeSearchView()
+            }else{
+                Toast.makeText(context, "Результатов не найдено!", Toast.LENGTH_SHORT).show()
+                Log.d("test", "testtt nothing to show")
+                bind.progressCircular.visibility = View.GONE
+            }
+        }
+    }
+
     private fun loadAllByPage(){
         movieViewModel.getPagedMovies().observe(viewLifecycleOwner, Observer {
             lifecycleScope.launch {
                 pagingAdapter.submitData(it)
-
             }
         })
-    }
-
-    private fun observeSearchView(){
-        if (movieViewModel.searchResult.value!!.isNotEmpty()){
-            movieViewModel.searchResult.observe(viewLifecycleOwner, Observer {
-                adapter.changeData(items = movieViewModel.searchResult.value!!)
-                bind.movieRecycler.adapter = adapter
-            })
-        }else {
-            Toast.makeText(context, "По данному запросу нет результата!", Toast.LENGTH_SHORT).show()
-        }
-    }
-    private suspend fun getSearch(query: String?){
-        movieViewModel.searchMovieByTitle(query!!)
-        if (movieViewModel.liveDataState.value == DataState.Loading) {
-            bind.progressCircular.visibility = View.VISIBLE
-        } else {
-            bind.progressCircular.visibility = View.GONE
-        }
     }
 }

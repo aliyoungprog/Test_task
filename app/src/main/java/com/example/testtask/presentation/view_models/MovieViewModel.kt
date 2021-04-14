@@ -58,12 +58,17 @@ class MovieViewModel (private val repository: MovieRepository) : ParentViewModel
 
     fun searchMovieByTitle(movieTitle: String){
         viewModelScope.launch {
+            liveDataState.postValue(DataState.Loading)
             repository.searchByTitle(movieTitle){
-                liveDataState.value = DataState.Loading
-                launch {
-                    post(it)
-                }
+                launch { post(it) }
             }
+        }
+    }
+
+    suspend fun searchMovieByTitle1(movieTitle: String){
+        liveDataState.value = DataState.Loading
+        repository.searchByTitle(movieTitle){
+            post(it)
         }
     }
 
@@ -72,11 +77,11 @@ class MovieViewModel (private val repository: MovieRepository) : ParentViewModel
     }
     private fun post(it: List<FavoriteMoviesEntity>){
         if (it.isEmpty()) {
-            liveDataState.value = DataState.NothingToShow
+            liveDataState.postValue(DataState.NothingToShow)
         }
         else {
-            searchResult.value = it
-            liveDataState.value = (DataState.Success)
+            liveDataState.postValue(DataState.Success)
+            searchResult.postValue(it)
         }
     }
 }
