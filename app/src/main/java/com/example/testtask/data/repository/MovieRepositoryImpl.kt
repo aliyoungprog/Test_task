@@ -56,10 +56,7 @@ class MovieRepositoryImpl(private val dao: FavoriteMoviesDao) : MovieRepository 
     override suspend fun searchByTitle(movieTitle: String, setMovies: (List<FavoriteMoviesEntity>) -> Unit) {
         val api = ApiRetrofit.injectApiService()
         withContext(Dispatchers.IO){
-            val movieList = async {
-                api.getMovieByTitle("7c4afca12ec6c62155cbfa6647f584b7", movieTitle)
-            }
-            //Log.d("test", "onQueryTextSubmit: 1")
+            val movieList = async { api.getMovieByTitle("7c4afca12ec6c62155cbfa6647f584b7", movieTitle) }
             if (movieList.await().body()?.items!!.isNotEmpty())
                 setMovies(movieList.await().body()!!.items)
             else{

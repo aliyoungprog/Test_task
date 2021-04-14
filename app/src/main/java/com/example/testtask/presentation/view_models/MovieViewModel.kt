@@ -56,15 +56,6 @@ class MovieViewModel (private val repository: MovieRepository) : ParentViewModel
         }
     }
 
-    fun searchMovieByTitle(movieTitle: String){
-        viewModelScope.launch {
-            liveDataState.postValue(DataState.Loading)
-            repository.searchByTitle(movieTitle){
-                launch { post(it) }
-            }
-        }
-    }
-
     suspend fun searchMovieByTitle1(movieTitle: String){
         liveDataState.value = DataState.Loading
         repository.searchByTitle(movieTitle){

@@ -130,15 +130,12 @@ class HomeFragment : Fragment(), MovieItemClickListener {
     private fun getSearch(query: String?){
         lifecycleScope.launch {
             movieViewModel.searchMovieByTitle1(query!!)
-            Log.d("test", "testtt loading")
             bind.progressCircular.visibility = View.VISIBLE
             if (movieViewModel.liveDataState.value == DataState.Success){
-                Log.d("test", "testtt success")
                 bind.progressCircular.visibility = View.GONE
                 observeSearchView()
             }else{
                 Toast.makeText(context, "Результатов не найдено!", Toast.LENGTH_SHORT).show()
-                Log.d("test", "testtt nothing to show")
                 bind.progressCircular.visibility = View.GONE
             }
         }
